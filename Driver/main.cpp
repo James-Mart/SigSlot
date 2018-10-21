@@ -1,30 +1,15 @@
 #include <functional>
 #include <iostream>
-#include <chrono>
 #include "SigSlot/SigSlot.h"
-
-struct Timer
-{
-    Timer()
-    {
-        start = std::chrono::high_resolution_clock::now();
-    }
-    ~Timer()
-    {
-        duration = (std::chrono::high_resolution_clock::now() - start);
-        std::cout << "Function timer took " << duration.count() * 1000.0f << "ms\n";
-    }
-
-    std::chrono::time_point<std::chrono::steady_clock> start;
-    std::chrono::duration<float> duration;
-};
+#include "SigSlot/Driver/Utilities/Timer.h"
 
 int main()
 {
-    Timer timer;
+    SigSlotUtils::Timer timer([](float p_time) {std::cout << "Function timer took " << p_time << "ms\n"; });
 
-    std::function<void(int, int)> func = [](int p1, int p2) {std::cout << p1 << " " << p2 << '\n'; };
-    std::vector<std::function<void(int, int)>> funcs = {func};
+    std::function<void(int, int)> funcPrint = [](int p1, int p2) {std::cout << "Arguments: " << p1 << " " << p2 << '\n'; };
+    std::function<void(int, int)> funcSum = [](int p1, int p2) {std::cout << "Sum: " << p1 + p2 << '\n'; };
+    std::vector<std::function<void(int, int)>> funcs = {funcPrint, funcSum};
  
     SlotExecution::ExecuteSlots(funcs, 1, 2);
 
