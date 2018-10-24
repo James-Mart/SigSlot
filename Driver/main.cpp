@@ -3,41 +3,25 @@
 #include "SigSlot/SigSlot.h"
 #include "SigSlot/Driver/Utilities/Timer.h"
 
-class SomeObject : public SigSlot::CanAlert
-                 , public SigSlot::CanFilter
-                 , public SigSlot::CanTest
+class SomeObject : public SigSlot::SignalValueChanged<int>
+                 , public SigSlot::SignalFilterValue<int&>
 {
 public:
-    SomeObject() : m_number(0) 
-    {
-        std::function<bool()> validationFunction = std::bind(&SomeObject::_IsValidData, this);
-        OnSignal_Test("DataValid", validationFunction, true);
-    }
+    SomeObject() : m_number(0) { /*NOP*/ }
     virtual ~SomeObject() {}
-
-    /*void Modify(int p_newNumber) { 
-        EmitSignal_Filter("FilterNumberChanging", p_newNumber);
-        if (m_number != p_newNumber)
-        {
-            m_number = p_newNumber;
-            EmitSignal_Alert("AlertNumberChanged");
-        }
-    }*/
 
     void Modify2(int p_newNumber)
     {
-        bool bValid = EmitSignal_Test("DataValid");
-        if (bValid)
+        //bool bValidOperation = EmitSignal_Test("AllowedToModify");
+        //if (bValidOperation)
         {
+            EmitSignal_FilterValue(p_newNumber);
             m_number = p_newNumber;
-            EmitSignal_Alert("AlertNumberChanged");
+            EmitSignal_ValueChanged(p_newNumber);
         }
     }
 
 private:
-    inline bool _IsValidData() const {
-        return true;
-    }
     int m_number;
 };
 
@@ -45,7 +29,7 @@ class SomeProcess
 {
 public:
     void AddObject(const SomeObject& obj)
-    {
+    {   
         m_objects.push_back(obj);
     }
     void Run()
@@ -63,31 +47,28 @@ private:
     std::vector<SomeObject> m_objects;
 };
 
-void TestSlotFunctions() 
-{
-    // Run regular slot functions
-    std::function<void(int, int)> funcPrint = [](int p1, int p2) {std::cout << "Arguments: " << p1 << " " << p2 << '\n'; };
-    std::function<void(int, int)> funcSum = [](int p1, int p2) {std::cout << "Sum: " << p1 + p2 << '\n'; };
-    std::vector<std::function<void(int, int)>> funcs = { funcPrint, funcSum };
-    SigSlot::Executor::Execute(funcs, 1, 2);
-
-    // Run failable slot functions
-    std::function<bool(int)> funcPrintInt = [](int p1) {std::cout << "Int: " << p1 << '\n'; return true; };
-    std::function<bool(int)> funcReturnFalse = [](int p1) {return false; };
-    std::vector<std::function<bool(int)>> failableFuncs = { funcPrintInt, funcReturnFalse };
-    int iNrSucceeded = SigSlot::Executor::ExecuteUntilFail(failableFuncs, 3);
-    if (iNrSucceeded < static_cast<int>(failableFuncs.size()))
-        std::cout << "Only " << iNrSucceeded << " out of " << failableFuncs.size() << " failable functions succeeded.\n";
+enum class LoginLevel { Developer, Administrator, Operator};
+LoginLevel _UserPrivileges()
+{   // In a real application this could query some user management interface
+    return LoginLevel::Administrator;
 }
 
 int main()
 {
     SigSlotUtils::Timer timer([](float p_time) {std::cout << "Function took " << p_time << "ms\n"; });
 
-    //TestSlotFunctions();
-
     SomeProcess process;
-    SomeObject obj;    
+    SomeObject obj;
+
+    //std::function<LoginLevel()> _userPrivs = _UserPrivileges;
+    //obj.OnSignal_Test("AllowedToModify", _userPrivs, LoginLevel::Administrator);
+    std::function<void(int)> _alert = [](int i) {std::cout << "Data changed to " << i << '\n'; };
+    obj.OnSignal_ValueChanged(_alert);
+    std::function<void(int&)> _filter = [](int& i) { i *=2; };
+    std::function<void(int&)> _filter2 = [](int& i) { i /= 2; };
+    obj.OnSignal_FilterValue(_filter);
+    obj.OnSignal_FilterValue(_filter2);
+
     process.AddObject(obj);
     process.Run();
 
