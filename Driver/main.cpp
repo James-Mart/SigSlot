@@ -11,8 +11,7 @@ public:
     SomeObject() : m_number(0) { /*NOP*/ }
     virtual ~SomeObject() {}
 
-    void Modify(int p_newNumber)
-    {
+    void Modify(int p_newNumber) {
         //Objects that use this pattern should emit signals where appropriate
         EmitSignal_FilterValue(p_newNumber);
         m_number = p_newNumber;
@@ -27,17 +26,14 @@ private:
 class SomeProcess
 {
 public:
-    void AddObject(const SomeObject& obj)
-    {
+    void AddObject(const SomeObject& obj) {
         m_objects.push_back(obj);
     }
-    void Run()
-    {
+
+    void Run() {
         // Other processes may use objects as they normally would
-        for (auto& object : m_objects) 
-        {
-            for (int i = 0; i < 100; ++i)
-            {
+        for (auto& object : m_objects) {
+            for (int i = 0; i < 100; ++i) {
                 object.Modify(i);
             }
         }
@@ -47,9 +43,8 @@ private:
     std::vector<SomeObject> m_objects;
 };
 
-int main()
-{
-    SigSlotUtils::Timer timer([](float p_time) {std::cout << "Function took " << p_time << "ms\n"; });
+int main() {
+    JmUtils::Timer timer([](float p_time) {std::cout << "Function took " << p_time << "ms\n"; });
 
     SomeObject obj;
     obj.OnSignal_ValueChanged([](int i) {std::cout << "Data changed to " << i << '\n'; });

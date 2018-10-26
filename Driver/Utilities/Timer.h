@@ -2,18 +2,15 @@
 #include <chrono>
 #include <functional>
 
-namespace SigSlotUtils
+namespace JmUtils
 {
     struct Timer
     {
         Timer(std::function<void(float)> p_GiveExecutionTime)
             : m_GiveExecutionTime(p_GiveExecutionTime)
-            , m_start(std::chrono::high_resolution_clock::now()) 
-        {
-            // NOP
-        }
-        ~Timer()
-        {
+            , m_start(std::chrono::high_resolution_clock::now()) { /* NOP */ }
+        
+        ~Timer() {
             m_duration = (std::chrono::high_resolution_clock::now() - m_start);
             m_GiveExecutionTime(m_duration.count() * 1000.0f);
         }

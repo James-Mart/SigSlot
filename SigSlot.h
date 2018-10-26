@@ -6,6 +6,9 @@
 
 namespace SigSlot
 {
+    /***********************************************************************
+    *     This is the class used by users of SigSlot
+    ************************************************************************/
     template <typename T, typename... Us>
     class SignalType
     {
@@ -14,15 +17,12 @@ namespace SigSlot
 
     protected: 
 
-        void OnSignal(const std::function<T(Us...)>& p_alertFunction)
-        {
+        void OnSignal(const std::function<T(Us...)>& p_alertFunction) {
             m_vecSlots.push_back(p_alertFunction);
         }
 
-        void Emit(Us... p_args)
-        {
-            for (const auto& func : m_vecSlots)
-            {
+        void Emit(Us... p_args) {
+            for (const auto& func : m_vecSlots) {
                 func(p_args...);
             }
         }
@@ -30,19 +30,18 @@ namespace SigSlot
         std::vector<std::function<T(Us...)>> m_vecSlots;
     };
 
+    //Here are some example 
     template <typename T>
     class SignalValueChanged : public SignalType<void, T>
     {
     public:
         virtual ~SignalValueChanged() { /* NOP */ }
 
-        void OnSignal_ValueChanged(const std::function<void(T)>& p_slotFunc)
-        {
+        void OnSignal_ValueChanged(const std::function<void(T)>& p_slotFunc) {
             SignalType<void, T>::OnSignal(p_slotFunc);
         }
 
-        void EmitSignal_ValueChanged(T p_newValue) 
-        {
+        void EmitSignal_ValueChanged(T p_newValue) {
             SignalType<void, T>::Emit(p_newValue);
         }
     };
@@ -53,13 +52,11 @@ namespace SigSlot
     public:
         virtual ~SignalFilterValue() { /*NOP*/ }
 
-        void OnSignal_FilterValue(const std::function<void(T...)>& p_slotFunc)
-        {
+        void OnSignal_FilterValue(const std::function<void(T...)>& p_slotFunc) {
             SignalType<void, T...>::OnSignal(p_slotFunc);
         }
 
-        void EmitSignal_FilterValue(T... p_value)
-        {
+        void EmitSignal_FilterValue(T... p_value) {
             SignalType<void, T...>::Emit(p_value...);
         }
     };
