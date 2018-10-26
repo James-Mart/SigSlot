@@ -6,19 +6,6 @@
 
 namespace SigSlot
 {
-    template<typename ...Ts>
-    int ExecuteUntilFail(const std::vector<std::function<bool(Ts...)>>& p_slots, Ts... p_args)
-    {
-        int iCount = 0;
-        for (const auto& func : p_slots)
-        {
-            if (!func(p_args...)) break;
-            ++iCount;
-        }
-        return iCount;
-    }
-    
-
     template <typename T, typename... Us>
     class SignalType
     {
@@ -60,20 +47,20 @@ namespace SigSlot
         }
     };
 
-    template<typename T>
-    class SignalFilterValue : SignalType<void, T>
+    template<typename... T>
+    class SignalFilterValue : SignalType<void, T...>
     {
     public:
         virtual ~SignalFilterValue() { /*NOP*/ }
 
-        void OnSignal_FilterValue(const std::function<void(T)>& p_slotFunc)
+        void OnSignal_FilterValue(const std::function<void(T...)>& p_slotFunc)
         {
-            SignalType<void, T>::OnSignal(p_slotFunc);
+            SignalType<void, T...>::OnSignal(p_slotFunc);
         }
 
-        void EmitSignal_FilterValue(T p_value)
+        void EmitSignal_FilterValue(T... p_value)
         {
-            SignalType<void, T>::Emit(p_value);
+            SignalType<void, T...>::Emit(p_value...);
         }
     };
 };
