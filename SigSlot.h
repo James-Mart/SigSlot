@@ -6,9 +6,9 @@
 
 namespace SigSlot
 {
-    /***********************************************************************
-    *     This is the class used by users of SigSlot
-    ************************************************************************/
+    /*****************************************************************
+    * SignalType provides the basic signal interface
+    ******************************************************************/
     template <typename T, typename... Us>
     class SignalType
     {
@@ -30,22 +30,23 @@ namespace SigSlot
         std::vector<std::function<T(Us...)>> m_vecSlots;
     };
 
-    //Here are some example 
+    /*****************************************************************
+    * Here are some common example SignalType variants 
+    ******************************************************************/
     template <typename T>
     class SignalValueChanged : public SignalType<void, T>
     {
     public:
         virtual ~SignalValueChanged() { /* NOP */ }
 
-        void OnSignal_ValueChanged(const std::function<void(T)>& p_slotFunc) {
+        void OnSignal_ValueChanged(const std::function<void(const T&)>& p_slotFunc) {
             SignalType<void, T>::OnSignal(p_slotFunc);
         }
 
-        void EmitSignal_ValueChanged(T p_newValue) {
+        void EmitSignal_ValueChanged(const T& p_newValue) {
             SignalType<void, T>::Emit(p_newValue);
         }
     };
-
     template<typename... T>
     class SignalFilterValue : SignalType<void, T...>
     {
@@ -60,4 +61,8 @@ namespace SigSlot
             SignalType<void, T...>::Emit(p_value...);
         }
     };
+
+    /*****************************************************************
+    * Subclass "SignalType" whenever a new signal variant is required
+    ******************************************************************/
 };
